@@ -1,66 +1,83 @@
-#modificado para que pida la clave nuevamente al descifrar el msj y deba resolver una ecuación si olvida la clave
-import random
+# modifié pour donner la possibilité de saisir du texte ou de sélectionner un fichier à encoder/décoder
 
+import string
 
-def cifrar(texto, clave):
-    texto_cifrado = ""
-    for letra in texto:
-        if letra.isalpha():
-            if letra.isupper():
-                texto_cifrado += chr((ord(letra) + clave - 65) % 26 + 65)
-            else:
-                texto_cifrado += chr((ord(letra) + clave - 97) % 26 + 97)
-        else:
-            texto_cifrado += letra
-    return texto_cifrado
+# Définition de l'alphabet en minuscules et majuscules, caractères spéciaux et chiffres
+alphabet_min = string.ascii_lowercase
+alphabet_maj = string.ascii_uppercase
+liste_caracteres_speciaux = [' ', '!', '?', '#', '@', '&', '(', ')', '-', ';', '_', ',', ';', '.', '/', ':', '=', '+']
+chiffres = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
+# Fonction pour lire un fichier texte
+def lire_fichier(chemin_fichier):
+    try:
+        with open(chemin_fichier, 'r') as fichier:
+            return fichier.read()
+    except FileNotFoundError:
+        print(f"Erreur : Le fichier {chemin_fichier} n'a pas été trouvé.")
+        exit()
 
-def descifrar(texto, clave):
-    texto_descifrado = ""
-    for letra in texto:
-        if letra.isalpha():
-            if letra.isupper():
-                texto_descifrado += chr((ord(letra) - clave - 65) % 26 + 65)
-            else:
-                texto_descifrado += chr((ord(letra) - clave - 97) % 26 + 97)
-        else:
-            texto_descifrado += letra
-    return texto_descifrado
+# Demander à l'utilisateur s'il souhaite saisir le texte ou importer un fichier
+print("Voulez-vous saisir le texte ou importer un fichier .txt ?")
+print("1: Saisir le texte")
+print("2: Importer un fichier .txt")
+option = input("Entrez votre choix (1 ou 2): ").strip()
 
+# Si l'utilisateur choisit de saisir le texte manuellement
+if option == '1':
+    message_a_decoder = input('Entrez la chaîne de caractères à coder: ')
+# Si l'utilisateur choisit d'importer un fichier
+elif option == '2':
+    chemin_fichier = input('Entrez le chemin du fichier: ')
+    message_a_decoder = lire_fichier(chemin_fichier)
+else:
+    print("Option non valide.")
+    exit()
 
-def operacion_matematica():
-    a = random.randint(1, 10)
-    b = random.randint(1, 10)
-    respuesta_correcta = a + b
-    print(f"Para recuperar la clave, resuelva la siguiente operación: {a} + {b}")
-    respuesta_usuario = int(input("Ingrese su respuesta: "))
-    return respuesta_usuario == respuesta_correcta
+# Demander la clé de codage
+cle = int(input('Quelle est la clé de codage ? Entrez un entier positif ou négatif: '))
+longueur_message = len(message_a_decoder)
+message_code = ''
 
+# Codage du message saisi ou lu depuis le fichier
+for i in range(longueur_message):
+    # Premier cas : le caractère est un caractère spécial, un espace ou un chiffre
+    if message_a_decoder[i] in liste_caracteres_speciaux or message_a_decoder[i] in chiffres:
+        message_code += message_a_decoder[i]
+    # Le caractère est une minuscule
+    elif message_a_decoder[i] in alphabet_min:
+        indice = alphabet_min.find(message_a_decoder[i])
+        indice_corrige = (indice + cle) % 26
+        message_code += alphabet_min[indice_corrige]
+    # Le caractère est une majuscule
+    elif message_a_decoder[i] in alphabet_maj:
+        indice = alphabet_maj.find(message_a_decoder[i])
+        indice_corrige = (indice + cle) % 26
+        message_code += alphabet_maj[indice_corrige]
 
-def main():
-    texto = input("Ingrese el texto a cifrar: ")
-    clave = int(input("Ingrese la clave para cifrar: "))
-    texto_cifrado = cifrar(texto, clave)
-    print("Texto cifrado: ", texto_cifrado)
+# Afficher le message codé
+print('Le message codé est : ' + message_code)
 
-    intentos = 0
-    while intentos < 3:
-        clave_para_descifrar = int(input("Ingrese la clave para descifrar: "))
-        texto_descifrado = descifrar(texto_cifrado, clave_para_descifrar)
-        if texto_descifrado == texto:
-            print("Texto descifrado correctamente: ", texto_descifrado)
-            return
-        else:
-            print("Clave incorrecta. Intente nuevamente.")
-            intentos += 1
+# Demander à nouveau la clé de décodage
+cle = int(input('Quelle est la clé de décodage ? Entrez un entier positif ou négatif: '))
+message_decode = ''
+longueur_message_code = len(message_code)  # Assurer que nous utilisons la longueur du message codé
 
-    print("Ha excedido el número de intentos permitidos.")
-    if operacion_matematica():
-        print(f"La clave correcta era: {clave}")
-        print("Texto descifrado: ", texto)
-    else:
-        print("Respuesta incorrecta. No se puede recuperar la clave.")
+# Décodage du message codé
+for i in range(longueur_message_code):
+    # Premier cas : le caractère est un caractère spécial, un espace ou un chiffre
+    if message_code[i] in liste_caracteres_speciaux or message_code[i] in chiffres:
+        message_decode += message_code[i]
+    # Le caractère est une minuscule
+    elif message_code[i] in alphabet_min:
+        indice = alphabet_min.find(message_code[i])
+        indice_corrige = (indice - cle) % 26
+        message_decode += alphabet_min[indice_corrige]
+    # Le caractère est une majuscule
+    elif message_code[i] in alphabet_maj:
+        indice = alphabet_maj.find(message_code[i])
+        indice_corrige = (indice - cle) % 26
+        message_decode += alphabet_maj[indice_corrige]
 
-
-if __name__ == "__main__":
-    main()
+# Afficher le message décodé
+print('Le message décodé est : ' + message_decode)
