@@ -1,5 +1,6 @@
-# modifié pour donner la possibilité de saisir du texte ou de sélectionner un fichier à encoder/décoder
+# modifié pour avoir l'option force brute au cas où vous oublieriez le mot de passe
 
+# modifié pour donner la possibilité de saisir du texte ou de sélectionner un fichier à encoder/décoder
 import string
 
 # Définition de l'alphabet en minuscules et majuscules, caractères spéciaux et chiffres
@@ -28,7 +29,6 @@ if option == '1':
     message_a_decoder = input('Entrez la chaîne de caractères à coder: ')
 # Si l'utilisateur choisit d'importer un fichier
 elif option == '2':
-    chemin_fichier = input('Entrez le chemin du fichier: ')
     message_a_decoder = lire_fichier(chemin_fichier)
 else:
     print("Option non valide.")
@@ -58,26 +58,52 @@ for i in range(longueur_message):
 # Afficher le message codé
 print('Le message codé est : ' + message_code)
 
-# Demander à nouveau la clé de décodage
-cle = int(input('Quelle est la clé de décodage ? Entrez un entier positif ou négatif: '))
+# Demander la clé de décodage
+cle_decode = int(input('Quelle est la clé de décodage ? Entrez un entier positif ou négatif: '))
 message_decode = ''
-longueur_message_code = len(message_code)  # Assurer que nous utilisons la longueur du message codé
 
-# Décodage du message codé
-for i in range(longueur_message_code):
-    # Premier cas : le caractère est un caractère spécial, un espace ou un chiffre
-    if message_code[i] in liste_caracteres_speciaux or message_code[i] in chiffres:
-        message_decode += message_code[i]
-    # Le caractère est une minuscule
-    elif message_code[i] in alphabet_min:
-        indice = alphabet_min.find(message_code[i])
-        indice_corrige = (indice - cle) % 26
-        message_decode += alphabet_min[indice_corrige]
-    # Le caractère est une majuscule
-    elif message_code[i] in alphabet_maj:
-        indice = alphabet_maj.find(message_code[i])
-        indice_corrige = (indice - cle) % 26
-        message_decode += alphabet_maj[indice_corrige]
+# Vérifier si la clé de décodage est correcte
+if cle_decode == cle:
+    # Décodage du message
+    for i in range(longueur_message):
+        # Premier cas : le caractère est un caractère spécial, un espace ou un chiffre
+        if message_code[i] in liste_caracteres_speciaux or message_code[i] in chiffres:
+            message_decode += message_code[i]
+        # Le caractère est une minuscule
+        elif message_code[i] in alphabet_min:
+            indice = alphabet_min.find(message_code[i])
+            indice_corrige = (indice - cle_decode) % 26
+            message_decode += alphabet_min[indice_corrige]
+        # Le caractère est une majuscule
+        elif message_code[i] in alphabet_maj:
+            indice = alphabet_maj.find(message_code[i])
+            indice_corrige = (indice - cle_decode) % 26
+            message_decode += alphabet_maj[indice_corrige]
 
-# Afficher le message décodé
-print('Le message décodé est : ' + message_decode)
+    # Afficher le message décodé
+    print('Le message décodé est : ' + message_decode)
+else:
+    # Si la clé de décodage est incorrecte, demander si l'utilisateur veut utiliser la force brute
+    reponse = input("Clé de décodage incorrecte. Voulez-vous essayer la méthode de force brute ? (O/N): ").strip().upper()
+    if reponse == 'O':
+        # Implémenter une attaque par force brute pour décoder le message sans la clé
+        def brute_force_cesar(message):
+            for cle in range(1, 26):  # Essayer toutes les clés de 1 à 25
+                message_decode = ''
+                for char in message:
+                    if char in liste_caracteres_speciaux or char in chiffres:
+                        message_decode += char
+                    elif char in alphabet_min:
+                        indice = alphabet_min.find(char)
+                        indice_corrige = (indice - cle) % 26
+                        message_decode += alphabet_min[indice_corrige]
+                    elif char in alphabet_maj:
+                        indice = alphabet_maj.find(char)
+                        indice_corrige = (indice - cle) % 26
+                        message_decode += alphabet_maj[indice_corrige]
+                print(f"Clé {cle}: {message_decode}")
+
+        print("\nTentatives de décodage par force brute :")
+        brute_force_cesar(message_code)
+    else:
+        print("Merci d'avoir utilisé le programme.")
