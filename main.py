@@ -4,8 +4,12 @@ alphabet_maj=string.ascii_uppercase
 liste_caracteres_speciaux=[' ','!','?','#','@','&','(',')','-',';','_',',',';','.','/',':','=','+']
 chiffres=['0','1','2','3','4','5','6','7','8','9']
 
-def codage_cesar(message_a_coder, clé) :
+def unifier(b): #fonction pour éliminer les accents
+    from unicodedata import normalize
+    return(normalize('NFD',b).encode('ASCII', 'ignore').decode('utf8'))
 
+def codage_cesar(message_a_coder, clé) : #fonction de codage de texte
+    message_a_coder = unifier(message_a_coder)
     longueur_message = len(message_a_coder)
     message_codé = ''
     for i in range(longueur_message):
